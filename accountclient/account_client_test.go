@@ -74,6 +74,14 @@ func TestFetch(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestFetch_Account_Not_Found(t *testing.T) {
+	accountID := "ad27e265-9605-4b4b-a0e5-3003ea9cc4df"
+	account, err := client.Fetch(accountID)
+	assert.Equal(t, AccountData{}, account)
+	assert.Equal(t, err, fmt.Errorf("account %s not found", accountID))
+
+}
+
 func testInput(file string) AccountData {
 	bytes, _ := os.ReadFile(file)
 	var account AccountData

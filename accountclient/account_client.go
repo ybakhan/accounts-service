@@ -140,6 +140,12 @@ func (ac accountsClient) Fetch(accountID string) (AccountData, error) {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode == http.StatusNotFound {
+		err = fmt.Errorf("account %s not fetched", accountID)
+		log.Print(err)
+		return AccountData{}, err
+	}
+
 	respBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return AccountData{}, err
@@ -157,6 +163,6 @@ func (ac accountsClient) Fetch(accountID string) (AccountData, error) {
 		return AccountData{}, err
 	}
 
-	log.Printf("account %s found", accountID)
+	log.Printf("account %s fetched", accountID)
 	return accountBody.Data, nil
 }
