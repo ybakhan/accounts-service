@@ -28,7 +28,7 @@ func TestCreate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			account := testInput(test.File)
 			createdAccount, err := client.Create(account)
-			assert.NotEqual(t, AccountData{}, createdAccount)
+			assert.Equal(t, account.ID, createdAccount.ID)
 			assert.Nil(t, err)
 		})
 	}
@@ -42,7 +42,6 @@ func TestCreate_Conflict(t *testing.T) {
 
 	createdAccount, err := client.Create(account)
 	assert.Equal(t, AccountData{}, createdAccount)
-	assert.NotNil(t, err)
 	assert.Equal(t, err, fmt.Errorf("account %s already exists", account.ID))
 }
 
@@ -61,8 +60,18 @@ func TestDelete(t *testing.T) {
 func TestDelete_Account_Not_Found(t *testing.T) {
 	accountID := "ad27e265-9605-4b4b-a0e5-3003ea9cc4df"
 	err := client.Delete(accountID, "0")
-	assert.NotNil(t, err)
 	assert.Equal(t, err, fmt.Errorf("account %s not found", accountID))
+}
+
+func TestFetch(t *testing.T) {
+	account := testInput("./test_input/account.json")
+	account.ID = "ad27e265-9605-4b4b-a0e5-3003ea9cc4da"
+	_, err := client.Create(account)
+	assert.Nil(t, err)
+
+	fetchedAccount, err := client.Fetch(account.ID)
+	assert.Equal(t, account.ID, fetchedAccount.ID)
+	assert.Nil(t, err)
 }
 
 func testInput(file string) AccountData {

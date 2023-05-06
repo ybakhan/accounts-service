@@ -22,7 +22,7 @@ type accountsClient struct {
 	client *http.Client
 }
 
-type AccountBody struct {
+type accountBody struct {
 	Data AccountData `json:"data"`
 }
 
@@ -41,7 +41,7 @@ func InitializeAccountsClient(baseURL, resource string) AccountsClient {
 }
 
 func (ac accountsClient) Create(account AccountData) (AccountData, error) {
-	accountJson, err := json.Marshal(AccountBody{account})
+	accountJson, err := json.Marshal(accountBody{account})
 	if err != nil {
 		return AccountData{}, err
 	}
@@ -75,7 +75,7 @@ func (ac accountsClient) Create(account AccountData) (AccountData, error) {
 		return AccountData{}, err
 	}
 
-	var accountBody AccountBody
+	var accountBody accountBody
 	err = json.Unmarshal(respBytes, &accountBody)
 	if err != nil {
 		return AccountData{}, err
@@ -151,7 +151,7 @@ func (ac accountsClient) Fetch(accountID string) (AccountData, error) {
 		return AccountData{}, err
 	}
 
-	var accountBody AccountBody
+	var accountBody accountBody
 	err = json.Unmarshal(respBytes, &accountBody)
 	if err != nil {
 		return AccountData{}, err
