@@ -78,7 +78,7 @@ func TestFetch_Account_Not_Found(t *testing.T) {
 	accountID := "ad27e265-9605-4b4b-a0e5-3003ea9cc4df"
 	account, err := client.Fetch(accountID)
 	assert.Equal(t, AccountData{}, account)
-	assert.Equal(t, err, fmt.Errorf("account %s not found", accountID))
+	assert.Equal(t, err, fmt.Errorf("account %s not fetched", accountID))
 
 }
 
