@@ -1,4 +1,4 @@
-package client
+package accountclient
 
 import (
 	"encoding/json"
