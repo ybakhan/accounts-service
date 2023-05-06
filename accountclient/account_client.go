@@ -1,4 +1,4 @@
-package client
+package accountclient
 
 import (
 	"bytes"
@@ -58,19 +58,19 @@ func (ac accountsClient) Create(account AccountData) (AccountData, error) {
 	}
 	defer resp.Body.Close()
 
-	respBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return AccountData{}, err
-	}
-
 	if resp.StatusCode == http.StatusConflict {
 		err = fmt.Errorf("account %s already exists", account.ID)
 		log.Print(err)
 		return AccountData{}, err
 	}
 
+	respBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return AccountData{}, err
+	}
+
 	if resp.StatusCode != http.StatusCreated {
-		err = fmt.Errorf("account not created. response: %s", string(respBytes))
+		err = fmt.Errorf("account %s not created. response: %s", account.ID, string(respBytes))
 		log.Print(err)
 		return AccountData{}, err
 	}
@@ -114,7 +114,7 @@ func (ac accountsClient) Delete(accountID, version string) error {
 
 	if resp.StatusCode != http.StatusNoContent {
 		respBytes, _ := io.ReadAll(resp.Body)
-		err = fmt.Errorf("account not deleted. response: %s", string(respBytes))
+		err = fmt.Errorf("account %s not deleted. response: %s", accountID, string(respBytes))
 		log.Print(err)
 		return err
 	}
@@ -124,5 +124,39 @@ func (ac accountsClient) Delete(accountID, version string) error {
 }
 
 func (ac accountsClient) Fetch(accountID string) (AccountData, error) {
-	return AccountData{}, nil
+	fetchURL, err := url.JoinPath(ac.URL, accountID)
+	if err != nil {
+		return AccountData{}, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, fetchURL, nil)
+	if err != nil {
+		return AccountData{}, err
+	}
+
+	resp, err := ac.client.Do(req)
+	if err != nil {
+		return AccountData{}, err
+	}
+	defer resp.Body.Close()
+
+	respBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return AccountData{}, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		err = fmt.Errorf("account %s not fetched. response: %s", accountID, string(respBytes))
+		log.Print(err)
+		return AccountData{}, err
+	}
+
+	var accountBody AccountBody
+	err = json.Unmarshal(respBytes, &accountBody)
+	if err != nil {
+		return AccountData{}, err
+	}
+
+	log.Printf("account %s found", accountID)
+	return accountBody.Data, nil
 }
