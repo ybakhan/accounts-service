@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+const AccountResource = "/organisation/accounts"
+
 type AccountClient interface {
 	Create(AccountData) (AccountData, error)
 	Delete(accountID, version string) error
@@ -27,13 +29,18 @@ type accountBody struct {
 }
 
 // InitializeAccountClient initializes an accounts client
-func InitializeAccountClient(baseURL, resource string) AccountClient {
+func InitializeAccountClient(baseURL, version string) AccountClient {
 	u, err := url.ParseRequestURI(baseURL)
 	if err != nil {
 		err = fmt.Errorf("error intializing accounts client: %w", err)
 		log.Fatal(err)
 	}
-	u.Path = resource
+
+	u.Path, err = url.JoinPath(version, AccountResource)
+	if err != nil {
+		err = fmt.Errorf("error intializing accounts client: %w", err)
+		log.Fatal(err)
+	}
 
 	return accountClient{
 		fmt.Sprintf("%v", u),

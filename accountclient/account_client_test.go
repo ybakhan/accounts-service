@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var client = InitializeAccountClient("http://localhost:8080", "/v1/organisation/accounts")
+var client = InitializeAccountClient("http://localhost:8080", "v1")
 
 // verify account is created
 func TestCreate(t *testing.T) {
