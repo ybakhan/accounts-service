@@ -63,6 +63,7 @@ func TestDelete_Account_Not_Found(t *testing.T) {
 	assert.Equal(t, err, fmt.Errorf("account %s not found", accountID))
 }
 
+// verify fetch account
 func TestFetch(t *testing.T) {
 	account := testInput("./test_input/account.json")
 	account.ID = "ad27e265-9605-4b4b-a0e5-3003ea9cc4da"
@@ -74,6 +75,7 @@ func TestFetch(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+// verify fetch account not found
 func TestFetch_Account_Not_Found(t *testing.T) {
 	accountID := "ad27e265-9605-4b4b-a0e5-3003ea9cc4df"
 	account, err := client.Fetch(accountID)

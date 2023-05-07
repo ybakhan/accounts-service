@@ -26,6 +26,7 @@ type accountBody struct {
 	Data AccountData `json:"data"`
 }
 
+// InitializeAccountsClient initializes an accounts client
 func InitializeAccountsClient(baseURL, resource string) AccountsClient {
 	u, err := url.ParseRequestURI(baseURL)
 	if err != nil {
@@ -40,6 +41,7 @@ func InitializeAccountsClient(baseURL, resource string) AccountsClient {
 	}
 }
 
+// Create creates an account
 func (ac accountsClient) Create(account AccountData) (AccountData, error) {
 	accountJson, err := json.Marshal(accountBody{account})
 	if err != nil {
@@ -85,6 +87,7 @@ func (ac accountsClient) Create(account AccountData) (AccountData, error) {
 	return accountBody.Data, nil
 }
 
+// Delete deletes an account by accountID and version
 func (ac accountsClient) Delete(accountID, version string) error {
 	deleteURL, err := url.JoinPath(ac.URL, accountID)
 	if err != nil {
@@ -123,6 +126,7 @@ func (ac accountsClient) Delete(accountID, version string) error {
 	return nil
 }
 
+// Fetch fetches an account by accountID
 func (ac accountsClient) Fetch(accountID string) (AccountData, error) {
 	fetchURL, err := url.JoinPath(ac.URL, accountID)
 	if err != nil {
