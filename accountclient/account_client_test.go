@@ -1,6 +1,7 @@
 package accountclient
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -27,7 +28,7 @@ func TestCreate(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			account := testInput(test.File)
-			createdAccount, err := client.Create(account)
+			createdAccount, err := client.Create(context.TODO(), account)
 			assert.Equal(t, account.ID, createdAccount.ID)
 			assert.Nil(t, err)
 		})
@@ -37,10 +38,10 @@ func TestCreate(t *testing.T) {
 // verify duplicate accounts not created
 func TestCreate_Conflict(t *testing.T) {
 	account := testInput("./test_input/account.json")
-	_, err := client.Create(account)
+	_, err := client.Create(context.TODO(), account)
 	assert.Nil(t, err)
 
-	createdAccount, err := client.Create(account)
+	createdAccount, err := client.Create(context.TODO(), account)
 	assert.Equal(t, AccountData{}, createdAccount)
 	assert.Equal(t, err, fmt.Errorf("account %s already exists", account.ID))
 }
@@ -49,17 +50,17 @@ func TestCreate_Conflict(t *testing.T) {
 func TestDelete(t *testing.T) {
 	account := testInput("./test_input/account.json")
 	account.ID = "ad27e265-9605-4b4b-a0e5-3003ea9cc4de"
-	_, err := client.Create(account)
+	_, err := client.Create(context.TODO(), account)
 	assert.Nil(t, err)
 
-	err = client.Delete(account.ID, "0")
+	err = client.Delete(context.TODO(), account.ID, "0")
 	assert.Nil(t, err)
 }
 
 // verify account is not found
 func TestDelete_Account_Not_Found(t *testing.T) {
 	accountID := "ad27e265-9605-4b4b-a0e5-3003ea9cc4df"
-	err := client.Delete(accountID, "0")
+	err := client.Delete(context.TODO(), accountID, "0")
 	assert.Equal(t, err, fmt.Errorf("account %s not found", accountID))
 }
 
@@ -67,10 +68,10 @@ func TestDelete_Account_Not_Found(t *testing.T) {
 func TestFetch(t *testing.T) {
 	account := testInput("./test_input/account.json")
 	account.ID = "ad27e265-9605-4b4b-a0e5-3003ea9cc4da"
-	_, err := client.Create(account)
+	_, err := client.Create(context.TODO(), account)
 	assert.Nil(t, err)
 
-	fetchedAccount, err := client.Fetch(account.ID)
+	fetchedAccount, err := client.Fetch(context.TODO(), account.ID)
 	assert.Equal(t, account.ID, fetchedAccount.ID)
 	assert.Nil(t, err)
 }
@@ -78,7 +79,7 @@ func TestFetch(t *testing.T) {
 // verify fetch account not found
 func TestFetch_Account_Not_Found(t *testing.T) {
 	accountID := "ad27e265-9605-4b4b-a0e5-3003ea9cc4df"
-	account, err := client.Fetch(accountID)
+	account, err := client.Fetch(context.TODO(), accountID)
 	assert.Equal(t, AccountData{}, account)
 	assert.Equal(t, err, fmt.Errorf("account %s not fetched", accountID))
 

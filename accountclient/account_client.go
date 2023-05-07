@@ -2,6 +2,7 @@ package accountclient
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,12 +12,15 @@ import (
 	"time"
 )
 
-const AccountResource = "/organisation/accounts"
+const (
+	accountResource = "/organisation/accounts"
+	timeout         = 2 * time.Second
+)
 
 type AccountClient interface {
-	Create(AccountData) (AccountData, error)
-	Delete(accountID, version string) error
-	Fetch(string) (AccountData, error)
+	Create(context.Context, AccountData) (AccountData, error)
+	Delete(ctx context.Context, accountID, version string) error
+	Fetch(context.Context, string) (AccountData, error)
 }
 
 type accountClient struct {
@@ -36,7 +40,7 @@ func InitializeAccountClient(baseURL, version string) AccountClient {
 		log.Fatal(err)
 	}
 
-	u.Path, err = url.JoinPath(version, AccountResource)
+	u.Path, err = url.JoinPath(version, accountResource)
 	if err != nil {
 		err = fmt.Errorf("error intializing accounts client: %w", err)
 		log.Fatal(err)
@@ -49,13 +53,16 @@ func InitializeAccountClient(baseURL, version string) AccountClient {
 }
 
 // Create creates an account
-func (ac accountClient) Create(account AccountData) (AccountData, error) {
+func (ac accountClient) Create(ctx context.Context, account AccountData) (AccountData, error) {
 	accountJson, err := json.Marshal(accountBody{account})
 	if err != nil {
 		return AccountData{}, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, ac.URL, bytes.NewBuffer(accountJson))
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, ac.URL, bytes.NewBuffer(accountJson))
 	req.Header.Add("Accept", "application/json")
 	if err != nil {
 		return AccountData{}, err
@@ -95,13 +102,16 @@ func (ac accountClient) Create(account AccountData) (AccountData, error) {
 }
 
 // Delete deletes an account by accountID and version
-func (ac accountClient) Delete(accountID, version string) error {
+func (ac accountClient) Delete(ctx context.Context, accountID, version string) error {
 	deleteURL, err := url.JoinPath(ac.URL, accountID)
 	if err != nil {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodDelete, deleteURL, nil)
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, deleteURL, nil)
 	if err != nil {
 		return err
 	}
@@ -134,13 +144,16 @@ func (ac accountClient) Delete(accountID, version string) error {
 }
 
 // Fetch fetches an account by accountID
-func (ac accountClient) Fetch(accountID string) (AccountData, error) {
+func (ac accountClient) Fetch(ctx context.Context, accountID string) (AccountData, error) {
 	fetchURL, err := url.JoinPath(ac.URL, accountID)
 	if err != nil {
 		return AccountData{}, err
 	}
 
-	req, err := http.NewRequest(http.MethodGet, fetchURL, nil)
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fetchURL, nil)
 	if err != nil {
 		return AccountData{}, err
 	}
