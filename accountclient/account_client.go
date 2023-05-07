@@ -11,13 +11,13 @@ import (
 	"time"
 )
 
-type AccountsClient interface {
+type AccountClient interface {
 	Create(AccountData) (AccountData, error)
 	Delete(accountID, version string) error
 	Fetch(string) (AccountData, error)
 }
 
-type accountsClient struct {
+type accountClient struct {
 	URL    string
 	client *http.Client
 }
@@ -26,8 +26,8 @@ type accountBody struct {
 	Data AccountData `json:"data"`
 }
 
-// InitializeAccountsClient initializes an accounts client
-func InitializeAccountsClient(baseURL, resource string) AccountsClient {
+// InitializeAccountClient initializes an accounts client
+func InitializeAccountClient(baseURL, resource string) AccountClient {
 	u, err := url.ParseRequestURI(baseURL)
 	if err != nil {
 		err = fmt.Errorf("error intializing accounts client: %w", err)
@@ -35,14 +35,14 @@ func InitializeAccountsClient(baseURL, resource string) AccountsClient {
 	}
 	u.Path = resource
 
-	return accountsClient{
+	return accountClient{
 		fmt.Sprintf("%v", u),
 		&http.Client{Timeout: 10 * time.Second},
 	}
 }
 
 // Create creates an account
-func (ac accountsClient) Create(account AccountData) (AccountData, error) {
+func (ac accountClient) Create(account AccountData) (AccountData, error) {
 	accountJson, err := json.Marshal(accountBody{account})
 	if err != nil {
 		return AccountData{}, err
@@ -88,7 +88,7 @@ func (ac accountsClient) Create(account AccountData) (AccountData, error) {
 }
 
 // Delete deletes an account by accountID and version
-func (ac accountsClient) Delete(accountID, version string) error {
+func (ac accountClient) Delete(accountID, version string) error {
 	deleteURL, err := url.JoinPath(ac.URL, accountID)
 	if err != nil {
 		return err
@@ -127,7 +127,7 @@ func (ac accountsClient) Delete(accountID, version string) error {
 }
 
 // Fetch fetches an account by accountID
-func (ac accountsClient) Fetch(accountID string) (AccountData, error) {
+func (ac accountClient) Fetch(accountID string) (AccountData, error) {
 	fetchURL, err := url.JoinPath(ac.URL, accountID)
 	if err != nil {
 		return AccountData{}, err
