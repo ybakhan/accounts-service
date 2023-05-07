@@ -12,10 +12,7 @@ import (
 	"time"
 )
 
-const (
-	accountResource = "/organisation/accounts"
-	timeout         = 2 * time.Second
-)
+const accountResource = "/organisation/accounts"
 
 type AccountClient interface {
 	Create(context.Context, AccountData) (AccountData, error)
@@ -24,8 +21,9 @@ type AccountClient interface {
 }
 
 type accountClient struct {
-	URL    string
-	client *http.Client
+	URL     string
+	client  *http.Client
+	timeout time.Duration
 }
 
 type accountBody struct {
@@ -33,7 +31,7 @@ type accountBody struct {
 }
 
 // InitializeAccountClient initializes an accounts client
-func InitializeAccountClient(baseURL, version string) AccountClient {
+func InitializeAccountClient(baseURL, version string, timeout time.Duration) AccountClient {
 	u, err := url.ParseRequestURI(baseURL)
 	if err != nil {
 		err = fmt.Errorf("error intializing accounts client: %w", err)
@@ -48,7 +46,8 @@ func InitializeAccountClient(baseURL, version string) AccountClient {
 
 	return accountClient{
 		fmt.Sprintf("%v", u),
-		&http.Client{Timeout: 10 * time.Second},
+		&http.Client{Timeout: timeout},
+		timeout,
 	}
 }
 
@@ -59,7 +58,7 @@ func (ac accountClient) Create(ctx context.Context, account AccountData) (Accoun
 		return AccountData{}, err
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, timeout)
+	ctx, cancel := context.WithTimeout(ctx, ac.timeout)
 	defer cancel()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, ac.URL, bytes.NewBuffer(accountJson))
@@ -108,7 +107,7 @@ func (ac accountClient) Delete(ctx context.Context, accountID, version string) e
 		return err
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, timeout)
+	ctx, cancel := context.WithTimeout(ctx, ac.timeout)
 	defer cancel()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, deleteURL, nil)
@@ -150,7 +149,7 @@ func (ac accountClient) Fetch(ctx context.Context, accountID string) (AccountDat
 		return AccountData{}, err
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, timeout)
+	ctx, cancel := context.WithTimeout(ctx, ac.timeout)
 	defer cancel()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fetchURL, nil)
