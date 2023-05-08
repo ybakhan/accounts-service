@@ -9,7 +9,7 @@ make build
 ## To run all tests
 
 ```
-docker compose up -d
+docker compose up
 
 make test
 ```
