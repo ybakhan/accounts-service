@@ -164,7 +164,7 @@ func (ac accountClient) Fetch(ctx context.Context, accountID string) (AccountDat
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusNotFound {
-		err = fmt.Errorf("account %s not fetched", accountID)
+		err = fmt.Errorf("account %s not found", accountID)
 		log.Print(err)
 		return AccountData{}, err
 	}
