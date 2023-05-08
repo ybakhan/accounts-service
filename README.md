@@ -3,7 +3,7 @@
 ## To build account client library
 
 ```
-go build ./...
+make build
 ```
 
 ## To run all tests
@@ -11,5 +11,5 @@ go build ./...
 ```
 docker compose up -d
 
-go test ./... -v -count=1
+make test
 ```
